@@ -76,6 +76,12 @@ public interface HelloVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitCond_op(HelloParser.Cond_opContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link HelloParser#cs_op}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCs_op(HelloParser.Cs_opContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link HelloParser#var_dec}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

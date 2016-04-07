@@ -81,38 +81,29 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 		// TODO Auto-generated method stub
 		
 		if( ctx.cond_op() != null && ctx.getChild(2) == ctx.expr() ){
-			Object a;			
-			try {
-				a = Integer.parseInt((String) super.visit(ctx.literals()));
-			} catch(NumberFormatException e) {
-				try {
-				a = Float.parseFloat((String) super.visit(ctx.literals()));
-				} catch(NumberFormatException e2){
-					a = super.visit(ctx.literals());
-				}
-			}
+			Object a = super.visit(ctx.literals());
 			if( a instanceof Integer ){ 
 				if( ctx.cond_op().getText().equals(">")){
-					return (Integer) a > Integer.parseInt((String)super.visit(ctx.expr()));
+					return (Integer) a > (Integer)super.visit(ctx.expr());
 				}
 				else if( ctx.cond_op().getText().equals("<")){
-					return (Integer) a < Integer.parseInt((String)super.visit(ctx.expr()));
+					return (Integer) a < (Integer)super.visit(ctx.expr());
 					
 				}
 				else if( ctx.cond_op().getText().equals(">=")){
-					return (Integer) a >= Integer.parseInt((String)super.visit(ctx.expr()));
+					return (Integer) a >= (Integer)super.visit(ctx.expr());
 					
 				}
 				else if( ctx.cond_op().getText().equals("<=")){
-					return (Integer) a <= Integer.parseInt((String)super.visit(ctx.expr()));
+					return (Integer) a <= (Integer)super.visit(ctx.expr());
 					
 				}
 				else if( ctx.cond_op().getText().equals("!=")){
-					return (Integer) a != Integer.parseInt((String)super.visit(ctx.expr()));
+					return (Integer) a != (Integer)super.visit(ctx.expr());
 					
 				}
 				else if( ctx.cond_op().getText().equals("==")){
-					return (Integer) a > Integer.parseInt((String)super.visit(ctx.expr()));
+					return (Integer) a > (Integer)super.visit(ctx.expr());
 					
 				}
 			}
@@ -318,12 +309,35 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 	@Override
 	public Object visitIf_stmt(HelloParser.If_stmtContext ctx) {
 		// TODO Auto-generated method stub
+		
+		
+		if( ctx.cond_stmt() != null ){
+			
+			if( (boolean) super.visit(ctx.cond_stmt())){
+				super.visitIf_stmt(ctx);
+			}
+			
+		}		
 		return null;
 	}
 
 	@Override
 	public Object visitCond_stmt(HelloParser.Cond_stmtContext ctx) {
 		// TODO Auto-generated method stub
+		
+		if( ctx.expr() != null ){
+			return super.visit(ctx.expr());
+		}
+		else if ( ctx.cs_op() != null ){
+			boolean a = (boolean) super.visit(ctx.expr());
+			
+			if( ctx.cs_op().getText().equals("&&") ){
+				return a && (boolean) super.visit(ctx.cond_stmt());
+			}
+			else if ( ctx.cs_op().getText().equals("||")){
+				return a || (boolean) super.visit(ctx.cond_stmt());
+			}
+		}
 		return null;
 	}
 
@@ -385,6 +399,9 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 		}
 		else if( ctx.print() != null ){
 			super.visit( ctx.print());
+		}
+		else if( ctx.if_stmt() != null ){
+			super.visit( ctx.if_stmt()); 
 		}
 		return null;
 	}

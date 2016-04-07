@@ -15,7 +15,7 @@ public class Main {
 //        });
 		
 		
-        ANTLRInputStream input = new ANTLRInputStream("NUMEROUNO{ idol x = 10 * ( 7 + 5 ) \\m/ broout(x) \\m/ broout(\"fuck\nyou\") \\m/ }");
+        ANTLRInputStream input = new ANTLRInputStream("NUMEROUNO{ pwedebang( 5 > 2 ){ broout( 123 )\\m/ } }");
 
         HelloLexer lexer = new HelloLexer(input);
 

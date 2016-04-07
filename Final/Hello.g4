@@ -41,6 +41,8 @@ incdec_stmt : ID '+' '+'
 
 cond_op : '>' | '<' | '>=' | '<=' | '!=' | '==';
 
+cs_op : '&&' | '||' ;
+
 var_dec : data_type var_dec_list ;
 
 var_dec_list : asgn_stmt 
@@ -67,8 +69,7 @@ if_stmt : 'pwedebang' '(' cond_stmt ')' '{' code_block '}'
 	| 'pwedebang' '(' cond_stmt ')' '{' code_block '}' 'oreto' '{' code_block '}' 
 	| 'pwedebang' '(' cond_stmt ')' '{' code_block '}' 'oreto' if_stmt;
 
-cond_stmt : expr '&&' cond_stmt 
-	| expr '||' cond_stmt
+cond_stmt : expr cs_op cond_stmt 
 	| expr ; 
 	
 return_stmt : 'bounce' expr terminator ;

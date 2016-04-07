@@ -117,6 +117,16 @@ public interface HelloListener extends ParseTreeListener {
 	 */
 	void exitCond_op(HelloParser.Cond_opContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link HelloParser#cs_op}.
+	 * @param ctx the parse tree
+	 */
+	void enterCs_op(HelloParser.Cs_opContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link HelloParser#cs_op}.
+	 * @param ctx the parse tree
+	 */
+	void exitCs_op(HelloParser.Cs_opContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link HelloParser#var_dec}.
 	 * @param ctx the parse tree
 	 */
