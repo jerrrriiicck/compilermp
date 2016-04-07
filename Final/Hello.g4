@@ -14,6 +14,8 @@ CHAR : '\''([0-9A-Za-z]|[\s])?'\'' ;
 
 BOOLEAN : 'true' | 'false' ;
 
+COMMENT : '8''='+'D'.*'~' ;
+
 ID : [a-zA-Z][0-9a-zA-Z]* ; // match lower-case identifiers
 
 WS : [ \t\r\n\u000C]+ -> skip ; // skip spaces, tabs, newlines
@@ -65,9 +67,7 @@ param_list_rcv : data_type ID
 	| param_list_rcv ',' data_type ID 
 	| empty ;
 	
-if_stmt : 'pwedebang' '(' cond_stmt ')' '{' code_block '}' 
-	| 'pwedebang' '(' cond_stmt ')' '{' code_block '}' 'oreto' '{' code_block '}' 
-	| 'pwedebang' '(' cond_stmt ')' '{' code_block '}' 'oreto' if_stmt;
+if_stmt : 'pwedebang' '(' cond_stmt ')' '{' code_block '}' ;
 
 cond_stmt : expr cs_op cond_stmt 
 	| expr ; 
@@ -89,7 +89,7 @@ for_loop : 'fre' '(' 'idol' ID '=' expr ';' cond_stmt ';' incdec_stmt ')' '{' co
 	
 while_loop : 'habang' '(' cond_stmt ')' '{' code_block '}' ;
 
-do_while : 'pls' '{' code_block '}' 'habang' '{' code_block '}' ; 
+do_while : 'pls' '{' code_block '}' 'habang' '(' cond_stmt ')' ; 
 
 code_block : code | code code_block | empty ;
 
@@ -98,11 +98,12 @@ code : var_dec terminator
 	| print terminator
 	| return_stmt terminator 
 	| asgn_stmt terminator
+	| do_while terminator
 	| if_stmt
 	| switch_block
 	| for_loop
-	| while_loop
-	| do_while ;
+	| while_loop 
+	| COMMENT ;
 	
 empty : ;
 

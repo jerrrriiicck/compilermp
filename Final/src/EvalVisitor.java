@@ -7,7 +7,6 @@ import javax.script.ScriptException;
 
 import org.antlr.v4.runtime.tree.ParseTree;
 
-
 public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 	
 	private static ParseTree tree;
@@ -17,6 +16,7 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 	private SymbolTable st;
 	private int ifcnt, fcnt, loopcnt;
 	private boolean iflocal;
+	private leScope g;
 	
 	public EvalVisitor(ParseTree tree, SymbolTable st){
 		
@@ -27,6 +27,7 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 		engine = manager.getEngineByName("JavaScript");
 		ifcnt = fcnt = loopcnt = 0;
 		iflocal = false;
+		g = new leScope();
 	}
 	
 	@Override
@@ -47,20 +48,6 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 		// TODO Auto-generated method stub
 		if( ctx != null){
 			
-//			if( iflocal ){
-//				Stack<String> traverse = new Stack<>();
-//				while( !st.isLocalEmpty() ){
-//					traverse.push(st.popLocalString());
-//					String str = traverse.peek();
-//					
-//					if( st.getScope(str).exists(ctx.getText())){
-//						while(!traverse.isEmpty())
-//							st.pushLocalString(traverse.pop());
-//						return st.getScope(str).retrieve(ctx.getText());
-//					}
-//				}
-//			}
-//			else {
 				if( st.getCurrScope().exists( ctx.getText() ) ){
 					return st.getCurrScope().retrieve(ctx.getText() );
 				}
@@ -77,7 +64,6 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 					}				
 					return a;
 				}
-//			}
 		}
 		return null;
 	}
@@ -261,12 +247,7 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 		
 		for(Symbol s : slist){
 			s.setDt(dt);
-			
-//			if( iflocal ){
-//				st.getScope(st.getCurrLocal()).declare(s);
-//			}
-//			else 
-				st.getCurrScope().declare(s);
+			st.getCurrScope().declare(s);
 		}
 		
 		return null;
@@ -297,12 +278,7 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 		}
 		else {
 			if( ctx.getChild(0) == ctx.ID() && ctx.expr() != null){
-//				if( iflocal ){
-//					if( !st.getScope(st.getCurrLocal()).exists(ctx.ID().getText())){
-//						return new Symbol(ctx.ID().getText() , super.visit(ctx.expr()));
-//					}
-//					st.getScope(st.getCurrLocal()).update(new Symbol(ctx.ID().getText()));
-//				}
+
 				if( !st.getCurrScope().exists(ctx.ID().getText())) {
 					return new Symbol(ctx.ID().getText(), super.visit(ctx.expr())); 
 				}
@@ -329,7 +305,7 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 	public Object visitFunc_call(HelloParser.Func_callContext ctx) {
 		// TODO Auto-generated method stub
 		
-		super.visit((ParseTree) st.getCurrScope().retrieve(ctx.ID().getText()));
+		//super.visit( st.getCurrScope().retrieve(ctx.ID().getText()));
 		
 		return null;
 	}
@@ -386,15 +362,16 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 	public Object visitIf_stmt(HelloParser.If_stmtContext ctx) {
 		// TODO Auto-generated method stub
 		
-		
 		if( ctx.cond_stmt() != null ){
-			
-			if( (boolean) super.visit(ctx.cond_stmt())){
-
-				super.visitIf_stmt(ctx);
-			}
-			
-		}		
+			if( (boolean)this.visit(ctx.cond_stmt().expr()) ){
+				leScope g = st.getCurrScope();
+				st.pushScope();
+				this.visit(ctx.code_block());
+				st.updateScope(st.getCurrScope());
+				st.getOutOfScope();
+			}						
+		}
+		
 		return null;
 	}
 
@@ -439,18 +416,32 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 	@Override
 	public Object visitFor_loop(HelloParser.For_loopContext ctx) {
 		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	@Override
 	public Object visitWhile_loop(HelloParser.While_loopContext ctx) {
 		// TODO Auto-generated method stub
+		
+		if( ctx.cond_stmt() != null ){
+			while( (boolean)this.visit(ctx.cond_stmt().expr()) ){
+				this.visit(ctx.code_block());
+			}						
+		}
+		
 		return null;
 	}
 
 	@Override
 	public Object visitDo_while(HelloParser.Do_whileContext ctx) {
 		// TODO Auto-generated method stub
+		
+		if( ctx.cond_stmt() != null ){
+			do{
+				this.visit(ctx.code_block());
+			}while ( (boolean) super.visit(ctx.cond_stmt()));
+		}
 		return null;
 	}
 
@@ -486,6 +477,16 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 		else if ( ctx.asgn_stmt() != null ){
 			super.visit( ctx.asgn_stmt() );
 		}
+		else if ( ctx.while_loop() != null ){
+			super.visit( ctx.while_loop() );
+		}
+		else if ( ctx.do_while() != null ){
+			super.visit( ctx.do_while() );
+		}
+		else if ( ctx.COMMENT() != null ){
+			
+		}
+		
 		return null;
 	}
 

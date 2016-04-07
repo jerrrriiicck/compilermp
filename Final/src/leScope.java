@@ -1,4 +1,5 @@
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by Angelo Amadora on 4/7/2016.
@@ -25,4 +26,9 @@ public class leScope {
     public boolean exists( String item ){
     	return SymTable.containsKey(item);
     }
+    
+    public HashMap<String, Symbol> getMap(){
+    	return SymTable;
+    }
+    
 }

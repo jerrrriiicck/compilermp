@@ -14,8 +14,7 @@ public class Main {
 //            }
 //        });
 		
-		
-        ANTLRInputStream input = new ANTLRInputStream("NUMEROUNO{ pwedebang( 1 < 5 ){broout(4)\\m/ } }");
+        ANTLRInputStream input = new ANTLRInputStream("NUMEROUNO{ 8==D shit pota\n\n\n broout() ~ 8==D ajksdnajsdnj ~ }");
 
         HelloLexer lexer = new HelloLexer(input);
 
