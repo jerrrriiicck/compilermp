@@ -1,9 +1,4 @@
 import java.util.ArrayList;
-import java.util.Stack;
-
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 
 import org.antlr.v4.runtime.tree.ParseTree;
 
@@ -11,11 +6,7 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 	
 	private static ParseTree tree;
 	private ArrayList<String> printList;
-	private ScriptEngineManager manager;
-	private ScriptEngine engine;
 	private SymbolTable st;
-	private int ifcnt, fcnt, loopcnt;
-	private boolean iflocal;
 	private leScope g;
 	
 	public EvalVisitor(ParseTree tree, SymbolTable st){
@@ -23,10 +14,6 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 		this.tree = tree;
 		this.st = st;
 		printList = new ArrayList<>();
-		manager = new ScriptEngineManager();
-		engine = manager.getEngineByName("JavaScript");
-		ifcnt = fcnt = loopcnt = 0;
-		iflocal = false;
 		g = new leScope();
 	}
 	
@@ -278,7 +265,6 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 		}
 		else {
 			if( ctx.getChild(0) == ctx.ID() && ctx.expr() != null){
-
 				if( !st.getCurrScope().exists(ctx.ID().getText())) {
 					return new Symbol(ctx.ID().getText(), super.visit(ctx.expr())); 
 				}
@@ -367,6 +353,7 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 		}
 		return null;
 	}
+	
 
 	@Override
 	public Object visitParam_list_rcv(HelloParser.Param_list_rcvContext ctx) {

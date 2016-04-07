@@ -14,7 +14,7 @@ public class Main {
 //            }
 //        });
 		
-        ANTLRInputStream input = new ANTLRInputStream("NUMEROUNO{ idol x = 1, y = 1 \\m/ bobomo()\\m/  bobomo() \\m/} wala bobomo(){ broout(123) \\m/}");
+        ANTLRInputStream input = new ANTLRInputStream("NUMEROUNO{ idol x = 1, y = 1 \\m/ pwedebang(x == 1){ x = 5 \\m/ } broout(x)\\m/ }");
 
         HelloLexer lexer = new HelloLexer(input);
 
