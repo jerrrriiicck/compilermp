@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Stack;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -14,6 +15,8 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 	private ScriptEngineManager manager;
 	private ScriptEngine engine;
 	private SymbolTable st;
+	private int ifcnt, fcnt, loopcnt;
+	private boolean iflocal;
 	
 	public EvalVisitor(ParseTree tree, SymbolTable st){
 		
@@ -22,6 +25,8 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 		printList = new ArrayList<>();
 		manager = new ScriptEngineManager();
 		engine = manager.getEngineByName("JavaScript");
+		ifcnt = fcnt = loopcnt = 0;
+		iflocal = false;
 	}
 	
 	@Override
@@ -41,24 +46,38 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 	public Object visitLiterals(HelloParser.LiteralsContext ctx) {
 		// TODO Auto-generated method stub
 		if( ctx != null){
-			if( st.getCurrScope().exists( ctx.getText() ) ){
-				return st.getCurrScope().retrieve(ctx.getText() );
-			}
-			else{
-				
-				Object a;
-				try {
-					a = Integer.parseInt((String) ctx.getText());
-				} catch(NumberFormatException e) {
-					try {
-					a = Float.parseFloat((String) ctx.getText());
-					} catch(NumberFormatException e2){
-						a = ctx.getText();
-					}
+			
+//			if( iflocal ){
+//				Stack<String> traverse = new Stack<>();
+//				while( !st.isLocalEmpty() ){
+//					traverse.push(st.popLocalString());
+//					String str = traverse.peek();
+//					
+//					if( st.getScope(str).exists(ctx.getText())){
+//						while(!traverse.isEmpty())
+//							st.pushLocalString(traverse.pop());
+//						return st.getScope(str).retrieve(ctx.getText());
+//					}
+//				}
+//			}
+//			else {
+				if( st.getCurrScope().exists( ctx.getText() ) ){
+					return st.getCurrScope().retrieve(ctx.getText() );
 				}
-				
-				return a;
-			}
+				else{				
+					Object a;
+					try {
+						a = Integer.parseInt((String) ctx.getText());
+					} catch(NumberFormatException e) {
+						try {
+						a = Float.parseFloat((String) ctx.getText());
+						} catch(NumberFormatException e2){
+							a = ctx.getText();
+						}
+					}				
+					return a;
+				}
+//			}
 		}
 		return null;
 	}
@@ -238,10 +257,17 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 			dt = datatype.BOOLEAN;
 		}
 		
-		Symbol s = (Symbol) super.visit(ctx.var_dec_list());
-		s.setDt(dt);
+		ArrayList<Symbol> slist = (ArrayList<Symbol>) super.visit(ctx.var_dec_list());
 		
-		st.getCurrScope().declare(s);	
+		for(Symbol s : slist){
+			s.setDt(dt);
+			
+//			if( iflocal ){
+//				st.getScope(st.getCurrLocal()).declare(s);
+//			}
+//			else 
+				st.getCurrScope().declare(s);
+		}
 		
 		return null;
 	}
@@ -249,11 +275,16 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 	@Override
 	public Object visitVar_dec_list(HelloParser.Var_dec_listContext ctx) {
 		// TODO Auto-generated method stub
-		if( ctx.var_dec_list() != null ){
-			return super.visit(ctx.var_dec_list());
-		}
-		else if ( ctx.asgn_stmt() != null ){
-			return super.visit(ctx.asgn_stmt());
+		
+		ArrayList<Symbol> slist = new ArrayList<>();
+		
+		if ( ctx.asgn_stmt() != null ){
+			slist.add( (Symbol) super.visit(ctx.asgn_stmt()));
+			if( ctx.var_dec_list() != null ){
+				slist.addAll( (ArrayList<Symbol>) super.visit(ctx.var_dec_list()));
+				return slist;
+			}
+			return slist;
 		}
 		return null;
 	}
@@ -265,11 +296,24 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 			super.visit(ctx.array());
 		}
 		else {
-			if( !st.getCurrScope().exists(ctx.ID().getText())) {
-				return new Symbol(ctx.ID().getText(), super.visit(ctx.expr())); 
+			if( ctx.getChild(0) == ctx.ID() && ctx.expr() != null){
+//				if( iflocal ){
+//					if( !st.getScope(st.getCurrLocal()).exists(ctx.ID().getText())){
+//						return new Symbol(ctx.ID().getText() , super.visit(ctx.expr()));
+//					}
+//					st.getScope(st.getCurrLocal()).update(new Symbol(ctx.ID().getText()));
+//				}
+				if( !st.getCurrScope().exists(ctx.ID().getText())) {
+					return new Symbol(ctx.ID().getText(), super.visit(ctx.expr())); 
+				}
+				else{
+					st.getCurrScope().update(new Symbol(ctx.ID().getText(), super.visit(ctx.expr())));
+				}
 			}
 			else{
-				st.getCurrScope().update(new Symbol(ctx.ID().getText(), super.visit(ctx.expr())));
+				if( !st.getCurrScope().exists(ctx.ID().getText())) {
+					return new Symbol(ctx.ID().getText()); 
+				}			
 			}
 		}
 		return null;
@@ -284,6 +328,9 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 	@Override
 	public Object visitFunc_call(HelloParser.Func_callContext ctx) {
 		// TODO Auto-generated method stub
+		
+		super.visit((ParseTree) st.getCurrScope().retrieve(ctx.ID().getText()));
+		
 		return null;
 	}
 
@@ -296,6 +343,35 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 	@Override
 	public Object visitFunc_dec(HelloParser.Func_decContext ctx) {
 		// TODO Auto-generated method stub
+		
+		datatype dt = null; 
+		
+		if( super.visit(ctx.data_type()).toString().equals("idol")){
+			dt = datatype.INT;
+		}
+		else if( ctx.getText().equals("pare")){
+			dt = datatype.FLOAT;
+		}
+		else if( ctx.getText().equals("bro")){
+			dt = datatype.CHAR;
+		}
+		else if( ctx.getText().equals("bros")){
+			dt = datatype.STRING;
+		}
+		else if ( ctx.getText().equals("bools")){
+			dt = datatype.BOOLEAN;
+		}
+		
+		Symbol s = new Symbol ( dt, ctx, ctx.ID().getText());
+		
+		if( ctx.param_list_rcv() != null ){
+			super.visit(ctx.param_list_rcv()); // param dec
+		}
+		
+		if( ctx.code_block() != null ){
+			
+			super.visitFunc_dec(ctx); // code_block
+		}
 		
 		return null;
 	}
@@ -314,6 +390,7 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 		if( ctx.cond_stmt() != null ){
 			
 			if( (boolean) super.visit(ctx.cond_stmt())){
+
 				super.visitIf_stmt(ctx);
 			}
 			
@@ -402,6 +479,12 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 		}
 		else if( ctx.if_stmt() != null ){
 			super.visit( ctx.if_stmt()); 
+		}
+		else if ( ctx.func_call() != null ){
+			super.visit( ctx.func_call());
+		}
+		else if ( ctx.asgn_stmt() != null ){
+			super.visit( ctx.asgn_stmt() );
 		}
 		return null;
 	}

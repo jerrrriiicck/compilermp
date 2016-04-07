@@ -15,7 +15,7 @@ public class Main {
 //        });
 		
 		
-        ANTLRInputStream input = new ANTLRInputStream("NUMEROUNO{ pwedebang( 5 > 2 ){ broout( 123 )\\m/ } }");
+        ANTLRInputStream input = new ANTLRInputStream("NUMEROUNO{ pwedebang( 1 < 5 ){broout(4)\\m/ } }");
 
         HelloLexer lexer = new HelloLexer(input);
 

@@ -27,6 +27,12 @@ public class Symbol {
     	this.name = name;
     	this.val = val;
     }
+    
+    public Symbol(String name){
+    	this.name = name;
+    	this.val = null;
+    	this.dt = null;
+    }
 
     public datatype getDt() {
         return dt;

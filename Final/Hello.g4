@@ -8,7 +8,7 @@ INT : '-'?[0-9]+ ;
 
 FLOAT : '-'?[0-9]+'.'[0-9]+('e''-'?[0-9]+)? ;
 
-STRING : '"'(([0-9A-Za-z]+' '?'\n'?)+)?'"' ;
+STRING : '"'((' '?[0-9A-Za-z]+' '?'\n'?)+)?'"' ;
 
 CHAR : '\''([0-9A-Za-z]|[\s])?'\'' ; 
 
@@ -48,7 +48,7 @@ var_dec : data_type var_dec_list ;
 var_dec_list : asgn_stmt 
 	| asgn_stmt ',' var_dec_list ;
 
-asgn_stmt : ID '=' expr | array '=' expr ;
+asgn_stmt : ID '=' expr | array '=' expr | ID ;
 
 array : ID '[' expr ']' ;  
 
@@ -58,8 +58,8 @@ param_list_pass : expr
 	| param_list_pass ',' expr 
 	| empty ;
 
-func_dec : data_type ID '(' param_list_rcv ')' '{' code_block '}' 
-	| data_type ID '(' param_list_rcv ')' '{' code_block return_stmt '}' ;
+func_dec : empty
+	| data_type ID '(' param_list_rcv ')' '{' code_block '}' func_dec ;
 
 param_list_rcv : data_type ID 
 	| param_list_rcv ',' data_type ID 
@@ -96,7 +96,8 @@ code_block : code | code code_block | empty ;
 code : var_dec terminator
 	| func_call terminator
 	| print terminator
-	| func_dec 
+	| return_stmt terminator 
+	| asgn_stmt terminator
 	| if_stmt
 	| switch_block
 	| for_loop
@@ -107,6 +108,6 @@ empty : ;
 
 print : 'broout' '(' expr ')' ;
 
-main : 'NUMEROUNO' '{' code_block '}';
+main : 'NUMEROUNO' '{' code_block '}' func_dec ;
 
 terminator : '\\m/' ;
