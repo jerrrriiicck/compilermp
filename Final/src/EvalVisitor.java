@@ -27,8 +27,6 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 	@Override
 	public Object visitR(HelloParser.RContext ctx) {
 		// TODO Auto-generated method stub
-		
-		System.out.println("root");
 		super.visit(ctx.main());
 		return null;
 	}
@@ -42,12 +40,25 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 	@Override
 	public Object visitLiterals(HelloParser.LiteralsContext ctx) {
 		// TODO Auto-generated method stub
-		System.out.println("literals");
 		if( ctx != null){
 			if( st.getCurrScope().exists( ctx.getText() ) ){
 				return st.getCurrScope().retrieve(ctx.getText() );
 			}
-			return ctx.getText();
+			else{
+				
+				Object a;
+				try {
+					a = Integer.parseInt((String) ctx.getText());
+				} catch(NumberFormatException e) {
+					try {
+					a = Float.parseFloat((String) ctx.getText());
+					} catch(NumberFormatException e2){
+						a = ctx.getText();
+					}
+				}
+				
+				return a;
+			}
 		}
 		return null;
 	}
@@ -69,11 +80,44 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 	public Object visitExpr(HelloParser.ExprContext ctx) {
 		// TODO Auto-generated method stub
 		
-		if( ctx.expr() != null){
-			return super.visit(ctx.expr());
+		if( ctx.cond_op() != null && ctx.getChild(2) == ctx.expr() ){
+			Object a;			
+			try {
+				a = Integer.parseInt((String) super.visit(ctx.literals()));
+			} catch(NumberFormatException e) {
+				try {
+				a = Float.parseFloat((String) super.visit(ctx.literals()));
+				} catch(NumberFormatException e2){
+					a = super.visit(ctx.literals());
+				}
+			}
+			if( a instanceof Integer ){ 
+				if( ctx.cond_op().getText().equals(">")){
+					return (Integer) a > Integer.parseInt((String)super.visit(ctx.expr()));
+				}
+				else if( ctx.cond_op().getText().equals("<")){
+					return (Integer) a < Integer.parseInt((String)super.visit(ctx.expr()));
+					
+				}
+				else if( ctx.cond_op().getText().equals(">=")){
+					return (Integer) a >= Integer.parseInt((String)super.visit(ctx.expr()));
+					
+				}
+				else if( ctx.cond_op().getText().equals("<=")){
+					return (Integer) a <= Integer.parseInt((String)super.visit(ctx.expr()));
+					
+				}
+				else if( ctx.cond_op().getText().equals("!=")){
+					return (Integer) a != Integer.parseInt((String)super.visit(ctx.expr()));
+					
+				}
+				else if( ctx.cond_op().getText().equals("==")){
+					return (Integer) a > Integer.parseInt((String)super.visit(ctx.expr()));
+					
+				}
+			}
 		}
-		else if ( ctx.adexpr() != null ){
-			//TODO
+		else if ( ctx.getChild(0) == ctx.adexpr() && ctx.adexpr() != null ){
 			return super.visit(ctx.adexpr());
 		}
 		return null;
@@ -82,46 +126,34 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 	@Override
 	public Object visitAdexpr(HelloParser.AdexprContext ctx) {
 		// TODO Auto-generated method stub
-		if( ctx.adexpr() != null){
-			Object a;
-			
-			try {
-				a = Integer.parseInt((String) super.visit(ctx.literals()));
-			} catch(NumberFormatException e) {
-				try {
-				a = Float.parseFloat((String) super.visit(ctx.literals()));
-				} catch(NumberFormatException e2){
-					a = super.visit(ctx.literals());
-				}
-			}
+		if( ctx.asop() != null && ctx.getChild(2) == ctx.adexpr() ){
+			Object a = super.visit(ctx.literals());
 			
 			if( a instanceof Integer ){
-				System.out.println("is int");
 				int result = 0;
 				if( ctx.asop().getText().equals("+")){
-					result = (Integer) a + Integer.parseInt((String)super.visit(ctx.adexpr()));
+					result = (Integer) a + (Integer)super.visit(ctx.adexpr());
 				}
 				else if( ctx.asop().getText().equals("-")){
-					result = (Integer) a - Integer.parseInt((String)super.visit(ctx.adexpr()));
+					result = (Integer) a - (Integer)super.visit(ctx.adexpr());
 				}
 				return result;
 			}
 			else if ( a instanceof Float ){
-				System.out.println("is float");
 				float result = 0; 
 				if( ctx.asop().getText().equals("+")){
-					result = (Float) a + Float.parseFloat((String)super.visit(ctx.adexpr()));
+					result = (Float) a + (Float)super.visit(ctx.adexpr());
 				}
 				else if( ctx.asop().getText().equals("-")){
-					result = (Float) a - Float.parseFloat((String)super.visit(ctx.adexpr()));
+					result = (Float) a - (Float) super.visit(ctx.adexpr());
 				} 
 				
 				return result;
 			}		
 			
 		}
-		else if( ctx.mdexpr() != null ){
-			return super.visit(ctx.getChild(0));
+		else if( ctx.getChild(0) == ctx.mdexpr() &&  ctx.mdexpr() != null ){
+			return super.visit(ctx.mdexpr());
 		}
 		return null;
 	}
@@ -130,53 +162,40 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 	public Object visitMdexpr(HelloParser.MdexprContext ctx) {
 		// TODO Auto-generated method stub
 		
-		System.out.println("multiply");
-		String str = "" ;
-		
-		if( ctx.mdexpr() != null ){
-			Object a; 
-			
-			try {
-				a = Integer.parseInt((String) super.visit(ctx.literals()));
-			} catch(NumberFormatException e) {
-				try {
-				a = Float.parseFloat((String) super.visit(ctx.literals()));
-				} catch(NumberFormatException e2){
-					a = super.visit(ctx.literals());
-				}
-			}				
+		if( ctx.mdop() != null && ctx.getChild(2) == ctx.mdexpr() ){
+			Object a = super.visit(ctx.literals());
+						
 			if( a instanceof Integer ){
-				System.out.println("is int");
 				int result = 0;
 				if( ctx.mdop().getText().equals("*")){
-					result = (Integer) a * Integer.parseInt((String)super.visit(ctx.mdexpr()));
+					result = (Integer) a * (Integer)super.visit(ctx.mdexpr());
 				}
 				else if( ctx.mdop().getText().equals("/")){
-					result = (Integer) a / Integer.parseInt((String)super.visit(ctx.mdexpr()));
+					result = (Integer) a / (Integer)super.visit(ctx.mdexpr());
 				}
 				else if( ctx.mdop().getText().equals("%")){
-					result = (Integer) a % Integer.parseInt((String)super.visit(ctx.mdexpr()));
+					result = (Integer) a % (Integer)super.visit(ctx.mdexpr());
 				}
 				return result;
 			}
 			else if ( a instanceof Float ){
-				System.out.println("is float");
 				float result = 0; 
 				if( ctx.mdop().getText().equals("*")){
-					result = (Float) a * Float.parseFloat((String)super.visit(ctx.mdexpr()));
+					result = (Float) a * (Float)super.visit(ctx.mdexpr());
 				}
 				else if( ctx.mdop().getText().equals("/")){
-					result = (Float) a / Float.parseFloat((String)super.visit(ctx.mdexpr()));
+					result = (Float) a / (Float)super.visit(ctx.mdexpr());
 				} 
 				else if( ctx.mdop().getText().equals("%")){
-					result = (Float) a % Float.parseFloat((String)super.visit(ctx.mdexpr()));
+					result = (Float) a % (Float)super.visit(ctx.mdexpr());
 				}
 				
 				return result;
 			}
 		}
-		else if( ctx.negexpr() != null ){
-			return super.visit(ctx.getChild(0));
+		else if( ctx.getChild(0) == ctx.negexpr() && ctx.negexpr() != null ){
+			
+			return super.visit(ctx.negexpr());
 		}
 		
 		return null;
@@ -185,15 +204,13 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 	@Override
 	public Object visitNegexpr(HelloParser.NegexprContext ctx) {
 		// TODO Auto-generated method stub
-		System.out.println("negexpr");
-		if( ctx.expr() != null){
-			System.out.println(super.visit(ctx.expr()));
-			
+		if( ctx.getChild(0) == ctx.literals() && ctx.literals() != null ){
+			return super.visit(ctx.literals());
+		}
+		else if( ctx.getChild(1) == ctx.expr() && ctx.expr() != null ){
 			return super.visit(ctx.expr());
 		}
-		else {
-			return super.visit(ctx.getChild(0));
-		}
+		return null;
 	}
 
 	@Override
@@ -212,8 +229,6 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 	public Object visitVar_dec(HelloParser.Var_decContext ctx) {
 		// TODO Auto-generated method stub
 		
-		System.out.println("var_dec");
-		
 		datatype dt = null; 
 		
 		if( super.visit(ctx.data_type()).toString().equals("idol")){
@@ -227,7 +242,10 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 		}
 		else if( ctx.getText().equals("bros")){
 			dt = datatype.STRING;
-		}		
+		}
+		else if ( ctx.getText().equals("bools")){
+			dt = datatype.BOOLEAN;
+		}
 		
 		Symbol s = (Symbol) super.visit(ctx.var_dec_list());
 		s.setDt(dt);
@@ -240,9 +258,6 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 	@Override
 	public Object visitVar_dec_list(HelloParser.Var_dec_listContext ctx) {
 		// TODO Auto-generated method stub
-		
-		System.out.println("var_dec_list");
-		
 		if( ctx.var_dec_list() != null ){
 			return super.visit(ctx.var_dec_list());
 		}
@@ -255,9 +270,6 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 	@Override
 	public Object visitAsgn_stmt(HelloParser.Asgn_stmtContext ctx) {
 		// TODO Auto-generated method stub
-		
-		System.out.println("asgn_stmt");
-		
 		if( ctx.array() != null ){
 			super.visit(ctx.array());
 		}
@@ -392,7 +404,6 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 	@Override
 	public Object visitMain(HelloParser.MainContext ctx) {
 		// TODO Auto-generated method stub
-		System.out.println("main");
 		st.pushScope();
 		super.visit(ctx.code_block());
 		return null;
@@ -401,7 +412,6 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 	
 	@Override
 	public Object visitPrint(HelloParser.PrintContext ctx) {		
-		System.out.println("print");
 		// TODO Auto-generated method stub
 		
 		if( ctx.expr() != null){
@@ -413,7 +423,7 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 			}
 			else{
 				String str = "" + super.visit(ctx.expr());
-				System.out.println(str.substring(1,str.length()-1));
+				System.out.println(str);
 				
 			}
 		}		

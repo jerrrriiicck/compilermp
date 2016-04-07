@@ -8,14 +8,14 @@ public class Main {
 		
 		Gui g = new Gui();
 		
-		javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                g.createAndShowGUI();
-            }
-        });
+//		javax.swing.SwingUtilities.invokeLater(new Runnable() {
+//            public void run() {
+//                g.createAndShowGUI();
+//            }
+//        });
 		
 		
-        ANTLRInputStream input = new ANTLRInputStream("NUMEROUNO{ idol x = 10 * 12  \\m/ broout(x) \\m/ broout(\"fuck\nyou\") \\m/ }");
+        ANTLRInputStream input = new ANTLRInputStream("NUMEROUNO{ idol x = 10 * ( 7 + 5 ) \\m/ broout(x) \\m/ broout(\"fuck\nyou\") \\m/ }");
 
         HelloLexer lexer = new HelloLexer(input);
 

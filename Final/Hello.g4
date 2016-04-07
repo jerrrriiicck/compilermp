@@ -12,11 +12,13 @@ STRING : '"'(([0-9A-Za-z]+' '?'\n'?)+)?'"' ;
 
 CHAR : '\''([0-9A-Za-z]|[\s])?'\'' ; 
 
+BOOLEAN : 'true' | 'false' ;
+
 ID : [a-zA-Z][0-9a-zA-Z]* ; // match lower-case identifiers
 
 WS : [ \t\r\n\u000C]+ -> skip ; // skip spaces, tabs, newlines
 
-data_type : 'bro' | 'bros' | 'idol' | 'pare' | 'wala'; 
+data_type : 'bro' | 'bros' | 'idol' | 'pare' | 'wala' | 'bools'; 
 
 literals : ID | FLOAT | CHAR | INT | STRING | func_call | 'true' | 'false' ;
 
@@ -24,20 +26,20 @@ asop : '+' | '-' ;
 
 mdop : '*' | '/' | '%' ;
 
-expr : literals cond_op expr | adexpr ;
+expr : literals cond_op expr | adexpr | '(' expr ')';
 
-adexpr : literals asop adexpr | mdexpr ;
+adexpr : literals asop adexpr | mdexpr | '(' expr ')';
 
-mdexpr : literals mdop mdexpr | negexpr ;
+mdexpr : literals mdop mdexpr | negexpr | '(' expr ')';
 
-negexpr : '!' literals | literals  | '(' expr ')' ;
+negexpr : '!' literals | literals | '(' expr ')' ;
 
 incdec_stmt : ID '+' '+'
 	| ID '-' '-'
 	| ID asop '=' expr 
 	| ID mdop '=' expr ;
 
-cond_op : '>' | '<' | '>=' | '<=' | '!=' ;
+cond_op : '>' | '<' | '>=' | '<=' | '!=' | '==';
 
 var_dec : data_type var_dec_list ;
 
