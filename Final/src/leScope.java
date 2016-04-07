@@ -31,4 +31,16 @@ public class leScope {
     	return SymTable;
     }
     
+    public void print(){
+    	
+    	for( String key : SymTable.keySet()){
+    		Symbol s = SymTable.get(key);
+    		System.out.println("ID: " + key + " | "
+    				+ "Data: " + s.getDt() + " | "
+    				+ "Value: " + s.getVal());
+    	}
+    }
+    
+    
+    
 }

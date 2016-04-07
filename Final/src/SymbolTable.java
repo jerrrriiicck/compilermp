@@ -40,4 +40,19 @@ public class SymbolTable {
     	}
     	
     }
+    
+    public void printStack(){
+    	
+    	Stack<leScope> temp = new Stack(); 
+    	
+    	while( !theScope.isEmpty() ){
+    		temp.push(theScope.pop());
+    		temp.peek().print();
+    	}
+    	
+    	while( !temp.isEmpty() ){
+    		theScope.push(temp.pop());
+    	}
+    }
+    
 }

@@ -14,7 +14,7 @@ public class Main {
 //            }
 //        });
 		
-        ANTLRInputStream input = new ANTLRInputStream("NUMEROUNO{ 8==D shit pota\n\n\n broout() ~ 8==D ajksdnajsdnj ~ }");
+        ANTLRInputStream input = new ANTLRInputStream("NUMEROUNO{ idol x = 1, y = 1 \\m/ bobomo()\\m/  bobomo() \\m/} wala bobomo(){ broout(123) \\m/}");
 
         HelloLexer lexer = new HelloLexer(input);
 
@@ -25,7 +25,7 @@ public class Main {
         SymbolTable st = new SymbolTable();
         
         
-        new EvalVisitor(tree, st).run();;
+        new EvalVisitor(tree, st).run();
         //EvalVisitor
         System.out.println(tree.toStringTree(parser)); // print LISP-style tree
     }

@@ -305,7 +305,18 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 	public Object visitFunc_call(HelloParser.Func_callContext ctx) {
 		// TODO Auto-generated method stub
 		
-		//super.visit( st.getCurrScope().retrieve(ctx.ID().getText()));
+		if( ctx.ID() != null ){
+			if( st.getCurrScope().exists(ctx.ID().getText())){
+				ArrayList<HelloParser.CodeContext> list = 
+						(ArrayList<HelloParser.CodeContext>) st.getCurrScope().retrieve(ctx.ID().getText());
+				
+				ArrayList<HelloParser.CodeContext> temp = (ArrayList) list.clone();
+				
+				for(HelloParser.CodeContext c : temp){
+					this.visitCode(c);
+				}
+			}
+		}
 		
 		return null;
 	}
@@ -319,42 +330,73 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 	@Override
 	public Object visitFunc_dec(HelloParser.Func_decContext ctx) {
 		// TODO Auto-generated method stub
+		ArrayList<HelloParser.CodeContext> clist = new ArrayList<>();
 		
 		datatype dt = null; 
 		
-		if( super.visit(ctx.data_type()).toString().equals("idol")){
-			dt = datatype.INT;
-		}
-		else if( ctx.getText().equals("pare")){
-			dt = datatype.FLOAT;
-		}
-		else if( ctx.getText().equals("bro")){
-			dt = datatype.CHAR;
-		}
-		else if( ctx.getText().equals("bros")){
-			dt = datatype.STRING;
-		}
-		else if ( ctx.getText().equals("bools")){
-			dt = datatype.BOOLEAN;
-		}
+		if( ctx.data_type() != null ){
 		
-		Symbol s = new Symbol ( dt, ctx, ctx.ID().getText());
-		
-		if( ctx.param_list_rcv() != null ){
-			super.visit(ctx.param_list_rcv()); // param dec
-		}
-		
-		if( ctx.code_block() != null ){
+			if( super.visit(ctx.data_type()).toString().equals("idol")){
+				dt = datatype.INT;
+			}
+			else if( ctx.data_type().getText().equals("pare")){
+				dt = datatype.FLOAT;
+			}
+			else if( ctx.data_type().getText().equals("bro")){
+				dt = datatype.CHAR;
+			}
+			else if( ctx.data_type().getText().equals("bros")){
+				dt = datatype.STRING;
+			}
+			else if ( ctx.data_type().getText().equals("bools")){
+				dt = datatype.BOOLEAN;
+			}
+			else if ( ctx.data_type().getText().equals("wala")){
+				dt = datatype.VOID;
+			}
 			
-			super.visitFunc_dec(ctx); // code_block
+			if( ctx.param_list_rcv() != null ){
+				super.visit(ctx.param_list_rcv()); // param dec
+			}
+			
+			if( ctx.code_block() != null ){
+				clist.add( ctx.code_block().code());
+			}
+			Symbol s = new Symbol ( dt, clist, ctx.ID().getText());
+			st.getCurrScope().declare(s);
 		}
-		
 		return null;
 	}
 
 	@Override
 	public Object visitParam_list_rcv(HelloParser.Param_list_rcvContext ctx) {
 		// TODO Auto-generated method stub
+		leScope local = new leScope();
+		
+		datatype dt = null; 
+
+		if( ctx.data_type() != null){
+			if( ctx.data_type() != null){
+				if( super.visit(ctx.data_type()).toString().equals("idol")){
+					dt = datatype.INT;
+				}
+				else if( ctx.getText().equals("pare")){
+					dt = datatype.FLOAT;
+				}
+				else if( ctx.getText().equals("bro")){
+					dt = datatype.CHAR;
+				}
+				else if( ctx.getText().equals("bros")){
+					dt = datatype.STRING;
+				}
+				else if ( ctx.getText().equals("bools")){
+					dt = datatype.BOOLEAN;
+					
+					local.declare(new Symbol(dt, ctx.ID().getText()));
+				}
+			}
+		}
+		
 		return null;
 	}
 
@@ -449,9 +491,10 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 	public Object visitCode_block(HelloParser.Code_blockContext ctx) {
 		// TODO Auto-generated method stub
 		if(ctx.code() != null ){
-			super.visit(ctx.code());
+			Object a = super.visit(ctx.code());
 			if(ctx.code_block() != null )
 				super.visit(ctx.code_block());
+			return a;
 		}
 		else 
 			super.visit(ctx.empty());
@@ -487,7 +530,7 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 			
 		}
 		
-		return null;
+		return ctx;
 	}
 
 	@Override
@@ -506,6 +549,7 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 	public Object visitMain(HelloParser.MainContext ctx) {
 		// TODO Auto-generated method stub
 		st.pushScope();
+		super.visit(ctx.func_dec());
 		super.visit(ctx.code_block());
 		return null;
 	}
@@ -538,6 +582,7 @@ public class EvalVisitor extends HelloBaseVisitor implements Runnable {
 		
 		System.out.println("THREAD");
 		this.visit(tree);
+		st.printStack();
 	}
 	
 }
